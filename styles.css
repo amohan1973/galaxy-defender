@@ -8,56 +8,62 @@ body {
     font-family: 'Arial', sans-serif;
     background: linear-gradient(135deg, #0c0c2e 0%, #1a1a3e 50%, #2d1b69 100%);
     color: white;
-    min-height: 100vh;
+    overflow: hidden;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
 }
 
 .game-container {
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
 }
 
-.header {
-    margin-bottom: 20px;
+.game-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 800px;
+    margin-bottom: 10px;
+    padding: 0 20px;
 }
 
-.header h1 {
+.game-header h1 {
     font-size: 2.5em;
     text-shadow: 0 0 20px #00ffff;
-    margin: 0;
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.score-display {
+.game-info {
     display: flex;
     gap: 30px;
     font-size: 1.2em;
     font-weight: bold;
 }
 
-.score-display span {
-    background: rgba(0, 255, 255, 0.1);
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 2px solid #00ffff;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+.score-display, .time-display {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    text-shadow: 0 0 10px #00ffff;
 }
 
 #gameCanvas {
     border: 3px solid #00ffff;
     border-radius: 10px;
-    background: linear-gradient(180deg, #000011 0%, #000033 100%);
+    background: radial-gradient(ellipse at center, #000428 0%, #004e92 100%);
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
     cursor: none;
 }
 
-.game-over-screen {
+.game-over-screen, .start-screen {
     position: absolute;
     top: 0;
     left: 0;
@@ -70,66 +76,69 @@ body {
     z-index: 1000;
 }
 
-.game-over-content {
+.game-over-content, .start-content {
+    text-align: center;
     background: linear-gradient(135deg, #1a1a3e 0%, #2d1b69 100%);
     padding: 40px;
     border-radius: 20px;
-    border: 3px solid #ff4444;
-    box-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
-    text-align: center;
+    border: 3px solid #00ffff;
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+    max-width: 500px;
 }
 
-.game-over-content h2 {
-    font-size: 2.5em;
+.game-over-content h2, .start-content h2 {
+    font-size: 3em;
     margin-bottom: 20px;
-    text-shadow: 0 0 20px #ff4444;
+    text-shadow: 0 0 20px #ff00ff;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.game-over-content p {
+.game-over-content p, .start-content p {
     font-size: 1.3em;
-    margin-bottom: 20px;
-    opacity: 0.9;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
-.final-score {
-    font-size: 1.5em;
-    font-weight: bold;
+.controls-info {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
     margin: 20px 0;
-    color: #00ffff;
-    text-shadow: 0 0 10px #00ffff;
+    border: 1px solid rgba(0, 255, 255, 0.3);
 }
 
-.restart-btn {
-    background: linear-gradient(135deg, #00ffff 0%, #0099cc 100%);
+.controls-info p {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.restart-button, .start-button {
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
     color: white;
     border: none;
     padding: 15px 30px;
-    font-size: 1.2em;
+    font-size: 1.3em;
     font-weight: bold;
     border-radius: 25px;
     cursor: pointer;
     transition: all 0.3s ease;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
-}
-
-.restart-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
-    background: linear-gradient(135deg, #00ccff 0%, #0066aa 100%);
-}
-
-.restart-btn:active {
-    transform: translateY(0);
-}
-
-.instructions {
     margin-top: 20px;
-    font-size: 1.1em;
-    opacity: 0.8;
 }
 
-.instructions p {
-    margin: 5px 0;
+.restart-button:hover, .start-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
+}
+
+.restart-button:active, .start-button:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 10px rgba(0, 255, 255, 0.3);
 }
 
 .hidden {
@@ -139,42 +148,56 @@ body {
 /* Responsive design */
 @media (max-width: 900px) {
     .game-container {
-        padding: 10px;
+        transform: scale(0.8);
     }
     
-    .header {
-        width: 100%;
-        max-width: 800px;
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .header h1 {
-        font-size: 2em;
-    }
-    
-    .score-display {
-        gap: 20px;
-        font-size: 1em;
+    .game-header {
+        width: 640px;
     }
     
     #gameCanvas {
-        max-width: 100%;
-        height: auto;
+        width: 640px;
+        height: 480px;
     }
 }
 
-@media (max-width: 600px) {
-    .header h1 {
-        font-size: 1.5em;
+@media (max-width: 700px) {
+    .game-container {
+        transform: scale(0.6);
     }
     
-    .score-display {
-        flex-direction: column;
-        gap: 10px;
+    .game-header h1 {
+        font-size: 2em;
     }
     
-    .instructions {
-        font-size: 0.9em;
+    .game-info {
+        font-size: 1em;
+        gap: 15px;
     }
+}
+
+/* Background animation */
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+        radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+        radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent),
+        radial-gradient(2px 2px at 160px 30px, #ddd, transparent);
+    background-repeat: repeat;
+    background-size: 200px 100px;
+    animation: twinkle 4s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
 }
