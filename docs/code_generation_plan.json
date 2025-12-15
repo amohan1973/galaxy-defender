@@ -1,11 +1,11 @@
 {
-  "executive_summary": "Implementation of Galaxy Defender as a pure HTML/CSS/JavaScript client-side game featuring a rocket ship that follows mouse cursor horizontally while avoiding asteroids and UFOs falling from the top of the screen. The game includes star collection for scoring, collision detection for game over conditions, and progressive difficulty increase every 10 seconds.",
+  "executive_summary": "Implementation of Galaxy Defender as a pure HTML/JavaScript client-side game featuring a rocket ship that follows mouse cursor horizontally to dodge asteroids and UFOs while collecting stars. The game includes vertical scrolling mechanics, collision detection, scoring system, and progressive difficulty increase every 10 seconds.",
   "tasks": [
     {
       "task_id": 1,
       "description": "Create HTML structure and basic styling",
       "requirements": "Set up the main HTML file with canvas element for game rendering, basic CSS styling for space theme, and responsive design",
-      "test_criteria": "HTML file loads properly with a centered canvas element and space-themed background",
+      "test_criteria": "HTML file loads properly, canvas is visible and properly sized, basic styling is applied",
       "files": [
         "index.html",
         "styles.css"
@@ -14,9 +14,9 @@
     },
     {
       "task_id": 2,
-      "description": "Initialize game canvas and basic game loop",
-      "requirements": "Create JavaScript game engine with canvas context, implement main game loop with requestAnimationFrame, and set up basic game state management",
-      "test_criteria": "Canvas renders and game loop runs at 60fps with basic frame counting",
+      "description": "Implement game initialization and canvas setup",
+      "requirements": "Initialize HTML5 canvas, set up game loop, create basic game state management, and establish coordinate system",
+      "test_criteria": "Canvas renders properly, game loop runs at consistent frame rate, basic game state variables are initialized",
       "files": [
         "game.js"
       ],
@@ -26,9 +26,9 @@
     },
     {
       "task_id": 3,
-      "description": "Implement player rocket entity",
-      "requirements": "Create player object with rocket emoji (\ud83d\ude80), implement horizontal mouse-following movement, and render player on canvas",
-      "test_criteria": "Rocket appears on screen and follows mouse cursor horizontally while staying within canvas bounds",
+      "description": "Create player rocket entity with mouse-following movement",
+      "requirements": "Implement rocket ship entity (\ud83d\ude80) that follows mouse cursor horizontally only, with proper boundary constraints within canvas",
+      "test_criteria": "Rocket appears on screen, follows mouse cursor horizontally, stays within canvas boundaries, vertical position remains fixed",
       "files": [
         "game.js"
       ],
@@ -38,9 +38,9 @@
     },
     {
       "task_id": 4,
-      "description": "Create falling object system",
-      "requirements": "Implement object spawning system that creates asteroids (\u2604\ufe0f), UFOs (\ud83d\udef8), and stars (\u2b50) at the top of screen with downward movement at high speed",
-      "test_criteria": "Objects spawn randomly at top of screen and move downward at consistent high speed, disappearing when they reach bottom",
+      "description": "Implement falling objects system",
+      "requirements": "Create system for spawning and managing falling objects (\u2b50 stars, \u2604\ufe0f asteroids, \ud83d\udef8 UFOs) that descend from top of screen at high speed",
+      "test_criteria": "Objects spawn randomly at top of screen, move downward at appropriate speed, are removed when they exit screen bottom",
       "files": [
         "game.js"
       ],
@@ -51,8 +51,8 @@
     {
       "task_id": 5,
       "description": "Implement collision detection system",
-      "requirements": "Create collision detection between player rocket and all falling objects using bounding box or circular collision detection",
-      "test_criteria": "Collisions are accurately detected between player and objects with appropriate visual feedback",
+      "requirements": "Create collision detection between player rocket and all falling objects, distinguishing between collectible stars and harmful objects",
+      "test_criteria": "Collisions are accurately detected, different object types trigger appropriate responses, collision boundaries are properly calculated",
       "files": [
         "game.js"
       ],
@@ -63,9 +63,9 @@
     },
     {
       "task_id": 6,
-      "description": "Implement scoring system",
-      "requirements": "Add score tracking that increases by 50 points when player collects a star, display current score on screen",
-      "test_criteria": "Score increases by 50 when star is collected and score is visibly displayed and updated in real-time",
+      "description": "Implement scoring system for star collection",
+      "requirements": "Add scoring mechanism that awards 50 points when player collects a star, display current score on screen",
+      "test_criteria": "Score increases by 50 when star is collected, score is displayed and updates in real-time, star disappears upon collection",
       "files": [
         "game.js"
       ],
@@ -75,35 +75,33 @@
     },
     {
       "task_id": 7,
-      "description": "Implement game over mechanics",
-      "requirements": "Trigger immediate game over when player touches asteroid or UFO, display game over screen with final score",
-      "test_criteria": "Game ends immediately upon collision with asteroid or UFO, showing game over screen with final score",
+      "description": "Implement game over system for harmful collisions",
+      "requirements": "Create game over state triggered by collision with asteroids or UFOs, display game over screen with final score",
+      "test_criteria": "Game ends immediately upon collision with asteroid or UFO, game over screen displays, final score is shown",
       "files": [
         "game.js"
       ],
       "dependencies": [
-        5,
-        6
+        5
       ]
     },
     {
       "task_id": 8,
       "description": "Implement progressive difficulty system",
-      "requirements": "Increase game speed every 10 seconds by increasing object spawn rate and/or movement speed",
-      "test_criteria": "Game becomes noticeably more difficult every 10 seconds with faster object movement or more frequent spawning",
+      "requirements": "Add system that increases game speed every 10 seconds to make the game progressively harder",
+      "test_criteria": "Game speed increases noticeably every 10 seconds, difficulty progression is smooth and challenging, timer tracks elapsed time accurately",
       "files": [
         "game.js"
       ],
       "dependencies": [
-        4,
-        7
+        4
       ]
     },
     {
       "task_id": 9,
       "description": "Add game restart functionality",
-      "requirements": "Implement restart button or key press to reset game state and start new game after game over",
-      "test_criteria": "Player can restart game after game over, resetting score and difficulty to initial state",
+      "requirements": "Implement ability to restart the game after game over, reset all game state variables to initial values",
+      "test_criteria": "Game can be restarted from game over screen, all variables reset properly, new game starts with initial difficulty",
       "files": [
         "game.js"
       ],
@@ -114,13 +112,20 @@
     {
       "task_id": 10,
       "description": "Polish and optimize game performance",
-      "requirements": "Optimize rendering performance, add visual polish like background stars, smooth animations, and ensure consistent frame rate",
-      "test_criteria": "Game runs smoothly at 60fps with polished visuals and no performance issues",
+      "requirements": "Optimize rendering performance, add visual polish, ensure smooth gameplay across different devices",
+      "test_criteria": "Game runs smoothly at 60fps, visual elements are crisp and well-positioned, responsive design works on different screen sizes",
       "files": [
         "game.js",
         "styles.css"
       ],
       "dependencies": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
         8,
         9
       ]
