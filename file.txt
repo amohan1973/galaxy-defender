@@ -1,0 +1,1390 @@
+I'll generate the corrected Galaxy Defender game code that addresses the identified issues. The main correction needed is to ensure the core game loop is properly implemented as specified in the plan.
+
+// File: index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Defender</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>Galaxy Defender</h1>
+            <div class="game-info">
+                <div class="score-display">Score: <span id="score">0</span></div>
+                <div class="time-display">Time: <span id="time">0</span>s</div>
+                <div class="speed-display">Speed: <span id="speed">1.0</span>x</div>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div id="gameOverScreen" class="game-over-screen hidden">
+            <div class="game-over-content">
+                <h2>Game Over!</h2>
+                <p>Final Score: <span id="finalScore">0</span></p>
+                <p>Survival Time: <span id="finalTime">0</span> seconds</p>
+                <button id="restartButton" class="restart-button">Play Again</button>
+            </div>
+        </div>
+        
+        <div id="startScreen" class="start-screen">
+            <div class="start-content">
+                <h2>Galaxy Defender</h2>
+                <p>🚀 Use your mouse to control the rocket</p>
+                <p>⭐ Collect stars for points (+50 each)</p>
+                <p>☄️ Avoid asteroids and UFOs 🛸</p>
+                <p>Game speed increases every 10 seconds!</p>
+                <button id="startButton" class="start-button">Start Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load modules in dependency order -->
+    <script src="scoring.js"></script>
+    <script src="collision.js"></script>
+    <script src="player.js"></script>
+    <script src="objects.js"></script>
+    <script src="difficulty.js"></script>
+    <script src="gamestate.js"></script>
+    <script src="restart.js"></script>
+    <script src="game.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
+
+// File: styles.css
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #0c0c2e 0%, #1a1a3e 50%, #2d2d5f 100%);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.game-container {
+    text-align: center;
+    position: relative;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.game-header {
+    margin-bottom: 15px;
+}
+
+.game-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.score-display, .time-display, .speed-display {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+#gameCanvas {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #000428 0%, #004e92 100%);
+    cursor: none;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.game-over-screen, .start-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.game-over-content, .start-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.game-over-content h2, .start-content h2 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.game-over-content p, .start-content p {
+    font-size: 1.3em;
+    margin-bottom: 15px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.restart-button, .start-button {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.3em;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.restart-button:hover, .start-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(45deg, #ee5a24, #ff6b6b);
+}
+
+.restart-button:active, .start-button:active {
+    transform: translateY(-1px);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Responsive design */
+@media (max-width: 900px) {
+    .game-container {
+        padding: 10px;
+    }
+    
+    #gameCanvas {
+        width: 90vw;
+        height: 60vh;
+    }
+    
+    .game-header h1 {
+        font-size: 2em;
+    }
+    
+    .game-info {
+        font-size: 1em;
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+// File: scoring.js
+/**
+ * Scoring System Module
+ * Handles score tracking and display updates
+ */
+class ScoringSystem {
+    constructor() {
+        this.score = 0;
+        this.starPoints = 50; // Points awarded for collecting a star
+    }
+
+    /**
+     * Reset score to zero
+     */
+    reset() {
+        this.score = 0;
+        this.updateDisplay();
+    }
+
+    /**
+     * Add points for collecting a star
+     * @param {string} objectType - Type of object collected
+     */
+    addPoints(objectType) {
+        if (objectType === 'star') {
+            this.score += this.starPoints;
+            this.updateDisplay();
+            return this.starPoints;
+        }
+        return 0;
+    }
+
+    /**
+     * Get current score
+     * @returns {number} Current score
+     */
+    getScore() {
+        return this.score;
+    }
+
+    /**
+     * Update score display in UI
+     */
+    updateDisplay() {
+        const scoreElement = document.getElementById('score');
+        if (scoreElement) {
+            scoreElement.textContent = this.score;
+        }
+    }
+
+    /**
+     * Update final score display on game over screen
+     */
+    updateFinalDisplay() {
+        const finalScoreElement = document.getElementById('finalScore');
+        if (finalScoreElement) {
+            finalScoreElement.textContent = this.score;
+        }
+    }
+}
+
+// File: collision.js
+/**
+ * Collision Detection System
+ * Handles collision detection between game entities
+ */
+class CollisionSystem {
+    constructor() {
+        this.particles = [];
+    }
+
+    /**
+     * Check collision between two circular objects
+     * @param {Object} obj1 - First object with x, y, size properties
+     * @param {Object} obj2 - Second object with x, y, size properties
+     * @returns {boolean} True if collision detected
+     */
+    checkCircularCollision(obj1, obj2) {
+        const distance = Math.sqrt(
+            Math.pow(obj1.x - obj2.x, 2) + 
+            Math.pow(obj1.y - obj2.y, 2)
+        );
+        
+        // Adjusted collision distance for better gameplay
+        const collisionDistance = (obj1.size + obj2.size) / 3;
+        return distance < collisionDistance;
+    }
+
+    /**
+     * Check collisions between player and all objects
+     * @param {Object} player - Player object
+     * @param {Array} objects - Array of game objects
+     * @param {Object} objectTypes - Object type definitions
+     * @returns {Object} Collision result with type and object
+     */
+    checkPlayerCollisions(player, objects, objectTypes) {
+        for (let i = objects.length - 1; i >= 0; i--) {
+            const obj = objects[i];
+            
+            if (this.checkCircularCollision(player, obj)) {
+                const objectData = objectTypes[obj.type];
+                
+                return {
+                    collided: true,
+                    objectIndex: i,
+                    objectType: obj.type,
+                    isGood: objectData.type === 'good',
+                    points: objectData.points,
+                    x: obj.x,
+                    y: obj.y
+                };
+            }
+        }
+        
+        return { collided: false };
+    }
+
+    /**
+     * Create particle effect for star collection
+     * @param {number} x - X position
+     * @param {number} y - Y position
+     */
+    createCollectionEffect(x, y) {
+        for (let i = 0; i < 15; i++) {
+            this.particles.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 8,
+                vy: (Math.random() - 0.5) * 8,
+                life: 30,
+                maxLife: 30,
+                alpha: 1,
+                color: '#FFD700',
+                size: Math.random() * 4 + 2
+            });
+        }
+    }
+
+    /**
+     * Create explosion effect for collision with harmful objects
+     * @param {number} x - X position
+     * @param {number} y - Y position
+     */
+    createExplosionEffect(x, y) {
+        for (let i = 0; i < 25; i++) {
+            this.particles.push({
+                x: x,
+                y: y,
+                vx: (Math.random() - 0.5) * 12,
+                vy: (Math.random() - 0.5) * 12,
+                life: 40,
+                maxLife: 40,
+                alpha: 1,
+                color: Math.random() > 0.5 ? '#FF4444' : '#FF8844',
+                size: Math.random() * 6 + 3
+            });
+        }
+    }
+
+    /**
+     * Update particle effects
+     */
+    updateParticles() {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const particle = this.particles[i];
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+            particle.life -= 1;
+            particle.alpha = particle.life / particle.maxLife;
+            
+            if (particle.life <= 0) {
+                this.particles.splice(i, 1);
+            }
+        }
+    }
+
+    /**
+     * Render particle effects
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     */
+    renderParticles(ctx) {
+        this.particles.forEach(particle => {
+            ctx.save();
+            ctx.globalAlpha = particle.alpha;
+            ctx.fillStyle = particle.color;
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+    }
+
+    /**
+     * Clear all particles
+     */
+    clearParticles() {
+        this.particles = [];
+    }
+}
+
+// File: player.js
+/**
+ * Player Entity Module
+ * Handles player rocket creation, movement, and rendering
+ */
+class Player {
+    constructor(canvasWidth, canvasHeight) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+        this.reset();
+        
+        // Mouse tracking
+        this.mouseX = canvasWidth / 2;
+        this.mouseY = canvasHeight - 100;
+    }
+
+    /**
+     * Reset player to initial state
+     */
+    reset() {
+        this.x = this.canvasWidth / 2;
+        this.y = this.canvasHeight - 80;
+        this.size = 40;
+        this.emoji = '🚀';
+        this.speed = 8;
+    }
+
+    /**
+     * Update mouse position for player movement
+     * @param {number} mouseX - Mouse X coordinate
+     * @param {number} mouseY - Mouse Y coordinate
+     */
+    updateMousePosition(mouseX, mouseY) {
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+    }
+
+    /**
+     * Update player position based on mouse movement
+     */
+    update() {
+        // Smooth horizontal movement following mouse
+        const targetX = this.mouseX;
+        const dx = targetX - this.x;
+        this.x += dx * 0.1;
+        
+        // Keep player within canvas bounds
+        const halfSize = this.size / 2;
+        this.x = Math.max(halfSize, Math.min(this.canvasWidth - halfSize, this.x));
+    }
+
+    /**
+     * Render player on canvas
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     */
+    render(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.font = `${this.size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Add glow effect
+        ctx.shadowColor = '#00FFFF';
+        ctx.shadowBlur = 10;
+        
+        ctx.fillText(this.emoji, 0, 0);
+        ctx.restore();
+    }
+
+    /**
+     * Get player bounds for collision detection
+     * @returns {Object} Player position and size
+     */
+    getBounds() {
+        return {
+            x: this.x,
+            y: this.y,
+            size: this.size
+        };
+    }
+}
+
+// File: objects.js
+/**
+ * Falling Objects System
+ * Handles spawning, updating, and rendering of falling objects
+ */
+class ObjectsSystem {
+    constructor(canvasWidth, canvasHeight) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+        this.objects = [];
+        
+        // Object type definitions
+        this.objectTypes = {
+            star: { emoji: '⭐', type: 'good', points: 50, size: 30 },
+            asteroid: { emoji: '☄️', type: 'bad', points: 0, size: 35 },
+            ufo: { emoji: '🛸', type: 'bad', points: 0, size: 40 }
+        };
+        
+        // Spawn settings
+        this.baseSpeed = 2;
+        this.spawnRate = 0.02;
+    }
+
+    /**
+     * Reset objects system
+     */
+    reset() {
+        this.objects = [];
+    }
+
+    /**
+     * Spawn new objects from top of screen
+     * @param {number} speedMultiplier - Current game speed multiplier
+     */
+    spawnObjects(speedMultiplier) {
+        if (Math.random() < this.spawnRate * speedMultiplier) {
+            const types = Object.keys(this.objectTypes);
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            const objectData = this.objectTypes[randomType];
+            
+            // Adjust spawn rates - more stars at higher speeds for balance
+            let spawnType = randomType;
+            if (speedMultiplier > 2.0 && Math.random() < 0.4) {
+                spawnType = 'star';
+            }
+            
+            const object = {
+                x: Math.random() * (this.canvasWidth - objectData.size) + objectData.size / 2,
+                y: -objectData.size,
+                size: objectData.size,
+                speed: (this.baseSpeed + Math.random() * 2) * speedMultiplier,
+                type: spawnType,
+                emoji: this.objectTypes[spawnType].emoji,
+                rotation: 0,
+                rotationSpeed: (Math.random() - 0.5) * 0.2
+            };
+            
+            this.objects.push(object);
+        }
+    }
+
+    /**
+     * Update all falling objects
+     */
+    update() {
+        for (let i = this.objects.length - 1; i >= 0; i--) {
+            const obj = this.objects[i];
+            obj.y += obj.speed;
+            obj.rotation += obj.rotationSpeed;
+            
+            // Remove objects that are off-screen
+            if (obj.y > this.canvasHeight + obj.size) {
+                this.objects.splice(i, 1);
+            }
+        }
+    }
+
+    /**
+     * Remove object at specific index
+     * @param {number} index - Index of object to remove
+     */
+    removeObject(index) {
+        if (index >= 0 && index < this.objects.length) {
+            this.objects.splice(index, 1);
+        }
+    }
+
+    /**
+     * Get all objects
+     * @returns {Array} Array of all objects
+     */
+    getObjects() {
+        return this.objects;
+    }
+
+    /**
+     * Get object type definitions
+     * @returns {Object} Object type definitions
+     */
+    getObjectTypes() {
+        return this.objectTypes;
+    }
+
+    /**
+     * Render all objects on canvas
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     */
+    render(ctx) {
+        this.objects.forEach(obj => {
+            ctx.save();
+            ctx.translate(obj.x, obj.y);
+            ctx.rotate(obj.rotation);
+            ctx.font = `${obj.size}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Add glow effect for different object types
+            if (obj.type === 'star') {
+                ctx.shadowColor = '#FFD700';
+                ctx.shadowBlur = 15;
+            } else {
+                ctx.shadowColor = '#FF4444';
+                ctx.shadowBlur = 8;
+            }
+            
+            ctx.fillText(obj.emoji, 0, 0);
+            ctx.restore();
+        });
+    }
+}
+
+// File: difficulty.js
+/**
+ * Difficulty Scaling System
+ * Manages progressive difficulty increases
+ */
+class DifficultySystem {
+    constructor() {
+        this.currentSpeedMultiplier = 1.0;
+        this.lastSpeedIncrease = 0;
+        this.speedIncreaseInterval = 10000; // 10 seconds in milliseconds
+        this.speedIncrement = 0.2;
+        this.particles = [];
+    }
+
+    /**
+     * Reset difficulty to initial state
+     */
+    reset() {
+        this.currentSpeedMultiplier = 1.0;
+        this.lastSpeedIncrease = 0;
+        this.particles = [];
+        this.updateDisplay();
+    }
+
+    /**
+     * Update difficulty based on game time
+     * @param {number} gameTime - Current game time in milliseconds
+     */
+    update(gameTime) {
+        // Increase difficulty every 10 seconds
+        if (gameTime - this.lastSpeedIncrease >= this.speedIncreaseInterval) {
+            this.currentSpeedMultiplier += this.speedIncrement;
+            this.lastSpeedIncrease = gameTime;
+            this.createSpeedUpEffect();
+            this.updateDisplay();
+        }
+
+        // Update speed-up particles
+        this.updateSpeedUpParticles();
+    }
+
+    /**
+     * Get current speed multiplier
+     * @returns {number} Current speed multiplier
+     */
+    getSpeedMultiplier() {
+        return this.currentSpeedMultiplier;
+    }
+
+    /**
+     * Create visual effect for speed increase
+     */
+    createSpeedUpEffect() {
+        // Visual feedback for speed increase
+        for (let i = 0; i < 20; i++) {
+            this.particles.push({
+                x: Math.random() * 800, // Canvas width
+                y: Math.random() * 600, // Canvas height
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4,
+                life: 60,
+                maxLife: 60,
+                alpha: 1,
+                color: '#00FFFF',
+                size: Math.random() * 3 + 1
+            });
+        }
+    }
+
+    /**
+     * Update speed-up effect particles
+     */
+    updateSpeedUpParticles() {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const particle = this.particles[i];
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+            particle.life -= 1;
+            particle.alpha = particle.life / particle.maxLife;
+            
+            if (particle.life <= 0) {
+                this.particles.splice(i, 1);
+            }
+        }
+    }
+
+    /**
+     * Render speed-up effect particles
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     */
+    renderSpeedUpEffects(ctx) {
+        this.particles.forEach(particle => {
+            ctx.save();
+            ctx.globalAlpha = particle.alpha;
+            ctx.fillStyle = particle.color;
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+    }
+
+    /**
+     * Update speed display in UI
+     */
+    updateDisplay() {
+        const speedElement = document.getElementById('speed');
+        if (speedElement) {
+            speedElement.textContent = this.currentSpeedMultiplier.toFixed(1);
+        }
+    }
+}
+
+// File: gamestate.js
+/**
+ * Game State Management System
+ * Handles game states and transitions
+ */
+class GameStateManager {
+    constructor() {
+        this.currentState = 'start'; // 'start', 'playing', 'gameOver'
+        this.gameTime = 0;
+        this.lastTime = 0;
+    }
+
+    /**
+     * Set current game state
+     * @param {string} state - New game state
+     */
+    setState(state) {
+        this.currentState = state;
+        
+        switch (state) {
+            case 'start':
+                this.showStartScreen();
+                break;
+            case 'playing':
+                this.hideStartScreen();
+                this.hideGameOverScreen();
+                break;
+            case 'gameOver':
+                this.showGameOverScreen();
+                break;
+        }
+    }
+
+    /**
+     * Get current game state
+     * @returns {string} Current game state
+     */
+    getState() {
+        return this.currentState;
+    }
+
+    /**
+     * Reset game time
+     */
+    resetTime() {
+        this.gameTime = 0;
+        this.lastTime = 0;
+        this.updateTimeDisplay();
+    }
+
+    /**
+     * Update game time
+     * @param {number} deltaTime - Time elapsed since last frame
+     */
+    updateTime(deltaTime) {
+        if (this.currentState === 'playing') {
+            this.gameTime += deltaTime;
+            this.updateTimeDisplay();
+        }
+    }
+
+    /**
+     * Get current game time
+     * @returns {number} Game time in milliseconds
+     */
+    getGameTime() {
+        return this.gameTime;
+    }
+
+    /**
+     * Show start screen
+     */
+    showStartScreen() {
+        const startScreen = document.getElementById('startScreen');
+        if (startScreen) {
+            startScreen.classList.remove('hidden');
+        }
+    }
+
+    /**
+     * Hide start screen
+     */
+    hideStartScreen() {
+        const startScreen = document.getElementById('startScreen');
+        if (startScreen) {
+            startScreen.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Show game over screen
+     */
+    showGameOverScreen() {
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        if (gameOverScreen) {
+            gameOverScreen.classList.remove('hidden');
+        }
+        
+        // Update final time display
+        const finalTimeElement = document.getElementById('finalTime');
+        if (finalTimeElement) {
+            finalTimeElement.textContent = Math.floor(this.gameTime / 1000);
+        }
+    }
+
+    /**
+     * Hide game over screen
+     */
+    hideGameOverScreen() {
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        if (gameOverScreen) {
+            gameOverScreen.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Update time display in UI
+     */
+    updateTimeDisplay() {
+        const timeElement = document.getElementById('time');
+        if (timeElement) {
+            timeElement.textContent = Math.floor(this.gameTime / 1000);
+        }
+    }
+
+    /**
+     * Check if game is currently playing
+     * @returns {boolean} True if game is in playing state
+     */
+    isPlaying() {
+        return this.currentState === 'playing';
+    }
+
+    /**
+     * Check if game is in game over state
+     * @returns {boolean} True if game is in game over state
+     */
+    isGameOver() {
+        return this.currentState === 'gameOver';
+    }
+
+    /**
+     * Check if game is in start state
+     * @returns {boolean} True if game is in start state
+     */
+    isStart() {
+        return this.currentState === 'start';
+    }
+}
+
+// File: restart.js
+/**
+ * Game Restart System
+ * Handles game restart functionality and state reset
+ */
+class RestartSystem {
+    constructor() {
+        this.setupEventListeners();
+    }
+
+    /**
+     * Setup event listeners for restart functionality
+     */
+    setupEventListeners() {
+        // Start game button
+        const startButton = document.getElementById('startButton');
+        if (startButton) {
+            startButton.addEventListener('click', () => {
+                this.onStartGame();
+            });
+        }
+
+        // Restart game button
+        const restartButton = document.getElementById('restartButton');
+        if (restartButton) {
+            restartButton.addEventListener('click', () => {
+                this.onRestartGame();
+            });
+        }
+    }
+
+    /**
+     * Handle start game event
+     */
+    onStartGame() {
+        if (window.gameInstance) {
+            window.gameInstance.startGame();
+        }
+    }
+
+    /**
+     * Handle restart game event
+     */
+    onRestartGame() {
+        if (window.gameInstance) {
+            window.gameInstance.restartGame();
+        }
+    }
+
+    /**
+     * Reset all game systems to initial state
+     * @param {Object} gameSystems - Object containing all game systems
+     */
+    resetAllSystems(gameSystems) {
+        try {
+            // Reset all systems
+            if (gameSystems.player) {
+                gameSystems.player.reset();
+            }
+            
+            if (gameSystems.objects) {
+                gameSystems.objects.reset();
+            }
+            
+            if (gameSystems.scoring) {
+                gameSystems.scoring.reset();
+            }
+            
+            if (gameSystems.difficulty) {
+                gameSystems.difficulty.reset();
+            }
+            
+            if (gameSystems.collision) {
+                gameSystems.collision.clearParticles();
+            }
+            
+            if (gameSystems.gameState) {
+                gameSystems.gameState.resetTime();
+            }
+            
+            console.log('All game systems reset successfully');
+        } catch (error) {
+            console.error('Error resetting game systems:', error);
+        }
+    }
+
+    /**
+     * Validate that all required systems are available
+     * @param {Object} gameSystems - Object containing all game systems
+     * @returns {boolean} True if all systems are valid
+     */
+    validateSystems(gameSystems) {
+        const requiredSystems = ['player', 'objects', 'scoring', 'difficulty', 'collision', 'gameState'];
+        
+        for (const system of requiredSystems) {
+            if (!gameSystems[system]) {
+                console.error(`Missing required system: ${system}`);
+                return false;
+            }
+        }
+        
+        return true;
+    }
+}
+
+// File: game.js
+/**
+ * Main Game Engine
+ * Coordinates all game systems and handles the core game loop
+ * This addresses the corrected implementation as specified in task 2
+ */
+class GameEngine {
+    constructor() {
+        try {
+            this.canvas = document.getElementById('gameCanvas');
+            if (!this.canvas) {
+                throw new Error('Game canvas not found');
+            }
+            
+            this.ctx = this.canvas.getContext('2d');
+            if (!this.ctx) {
+                throw new Error('Canvas context not available');
+            }
+
+            // Initialize all game systems
+            this.initializeSystems();
+            
+            // Game loop timing
+            this.lastTime = 0;
+            
+            // Mouse tracking
+            this.setupMouseTracking();
+            
+            console.log('Game engine initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize game engine:', error);
+            this.handleInitializationError(error);
+        }
+    }
+
+    /**
+     * Initialize all game systems
+     */
+    initializeSystems() {
+        this.gameState = new GameStateManager();
+        this.player = new Player(this.canvas.width, this.canvas.height);
+        this.objects = new ObjectsSystem(this.canvas.width, this.canvas.height);
+        this.collision = new CollisionSystem();
+        this.scoring = new ScoringSystem();
+        this.difficulty = new DifficultySystem();
+        this.restart = new RestartSystem();
+    }
+
+    /**
+     * Setup mouse tracking for player movement
+     */
+    setupMouseTracking() {
+        this.canvas.addEventListener('mousemove', (e) => {
+            try {
+                const rect = this.canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                this.player.updateMousePosition(mouseX, mouseY);
+            } catch (error) {
+                console.error('Error handling mouse movement:', error);
+            }
+        });
+
+        // Prevent context menu on right click
+        this.canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+    }
+
+    /**
+     * Start a new game
+     */
+    startGame() {
+        try {
+            this.gameState.setState('playing');
+            
+            // Reset all systems
+            this.restart.resetAllSystems({
+                player: this.player,
+                objects: this.objects,
+                scoring: this.scoring,
+                difficulty: this.difficulty,
+                collision: this.collision,
+                gameState: this.gameState
+            });
+            
+            console.log('Game started successfully');
+        } catch (error) {
+            console.error('Error starting game:', error);
+        }
+    }
+
+    /**
+     * Restart the game
+     */
+    restartGame() {
+        try {
+            this.startGame();
+            console.log('Game restarted successfully');
+        } catch (error) {
+            console.error('Error restarting game:', error);
+        }
+    }
+
+    /**
+     * Main game loop - Core implementation as specified in task 2
+     * @param {number} currentTime - Current timestamp
+     */
+    gameLoop(currentTime = 0) {
+        try {
+            const deltaTime = currentTime - this.lastTime;
+            this.lastTime = currentTime;
+
+            // Update game state time
+            this.gameState.updateTime(deltaTime);
+
+            if (this.gameState.isPlaying()) {
+                this.update(deltaTime);
+            }
+
+            this.render();
+            
+        } catch (error) {
+            console.error('Error in game loop:', error);
+        }
+        
+        requestAnimationFrame((time) => this.gameLoop(time));
+    }
+
+    /**
+     * Update all game systems
+     * @param {number} deltaTime - Time elapsed since last frame
+     */
+    update(deltaTime) {
+        try {
+            // Update difficulty and get current speed multiplier
+            this.difficulty.update(this.gameState.getGameTime());
+            const speedMultiplier = this.difficulty.getSpeedMultiplier();
+
+            // Update game systems
+            this.player.update();
+            this.objects.spawnObjects(speedMultiplier);
+            this.objects.update();
+            this.collision.updateParticles();
+
+            // Check collisions
+            this.checkCollisions();
+            
+        } catch (error) {
+            console.error('Error updating game:', error);
+        }
+    }
+
+    /**
+     * Check collisions between player and objects
+     */
+    checkCollisions() {
+        try {
+            const playerBounds = this.player.getBounds();
+            const objects = this.objects.getObjects();
+            const objectTypes = this.objects.getObjectTypes();
+
+            const collisionResult = this.collision.checkPlayerCollisions(
+                playerBounds, 
+                objects, 
+                objectTypes
+            );
+
+            if (collisionResult.collided) {
+                if (collisionResult.isGood) {
+                    // Collect star - adds 50 points as per scoring rules
+                    this.scoring.addPoints(collisionResult.objectType);
+                    this.collision.createCollectionEffect(collisionResult.x, collisionResult.y);
+                    this.objects.removeObject(collisionResult.objectIndex);
+                } else {
+                    // Hit asteroid or UFO - Game Over as per game rules
+                    this.collision.createExplosionEffect(collisionResult.x, collisionResult.y);
+                    this.gameOver();
+                }
+            }
+        } catch (error) {
+            console.error('Error checking collisions:', error);
+        }
+    }
+
+    /**
+     * Handle game over
+     */
+    gameOver() {
+        try {
+            this.gameState.setState('gameOver');
+            this.scoring.updateFinalDisplay();
+            console.log('Game over');
+        } catch (error) {
+            console.error('Error handling game over:', error);
+        }
+    }
+
+    /**
+     * Render all game elements
+     */
+    render() {
+        try {
+            // Clear canvas with gradient background
+            this.renderBackground();
+            
+            // Render star field
+            this.renderStarField();
+            
+            if (this.gameState.isPlaying()) {
+                this.player.render(this.ctx);
+                this.objects.render(this.ctx);
+            }
+            
+            // Render particle effects
+            this.collision.renderParticles(this.ctx);
+            this.difficulty.renderSpeedUpEffects(this.ctx);
+            
+        } catch (error) {
+            console.error('Error rendering game:', error);
+        }
+    }
+
+    /**
+     * Render background gradient
+     */
+    renderBackground() {
+        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+        gradient.addColorStop(0, '#000428');
+        gradient.addColorStop(1, '#004e92');
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    /**
+     * Render animated star field background
+     */
+    renderStarField() {
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        for (let i = 0; i < 50; i++) {
+            const x = (i * 37) % this.canvas.width;
+            const y = (i * 47 + this.gameState.getGameTime() * 0.01) % this.canvas.height;
+            const size = Math.sin(i + this.gameState.getGameTime() * 0.001) * 0.5 + 1;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, size, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+    }
+
+    /**
+     * Handle initialization errors
+     * @param {Error} error - The initialization error
+     */
+    handleInitializationError(error) {
+        const errorMessage = `Failed to initialize Galaxy Defender: ${error.message}`;
+        alert('Sorry, there was an error loading the game. Please refresh the page and try again.');
+        
+        // Try to display error in console for debugging
+        if (console && console.error) {
+            console.error(errorMessage);
+        }
+    }
+
+    /**
+     * Start the game engine
+     */
+    start() {
+        try {
+            this.gameLoop();
+            console.log('Game engine started');
+        } catch (error) {
+            console.error('Error starting game engine:', error);
+            this.handleInitializationError(error);
+        }
+    }
+}
+
+// File: main.js
+/**
+ * Main Application Entry Point
+ * Initializes and starts the Galaxy Defender game
+ */
+
+/**
+ * Initialize the game when DOM is loaded
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        console.log('Initializing Galaxy Defender...');
+        
+        // Create global game instance
+        window.gameInstance = new GameEngine();
+        
+        // Start the game engine
+        window.gameInstance.start();
+        
+        console.log('Galaxy Defender initialized successfully');
+        
+    } catch (error) {
+        console.error('Failed to initialize Galaxy Defender:', error);
+        
+        // Show user-friendly error message
+        const errorMessage = 'Sorry, there was an error loading the game. Please refresh the page and try again.';
+        alert(errorMessage);
+        
+        // Try to show error details in a div if available
+        const errorDiv = document.getElementById('error-message');
+        if (errorDiv) {
+            errorDiv.textContent = errorMessage;
+            errorDiv.style.display = 'block';
+        }
+    }
+});
+
+/**
+ * Handle window resize events
+ */
+window.addEventListener('resize', () => {
+    try {
+        // Future enhancement: Responsive canvas sizing
+        console.log('Window resized - responsive features could be added here');
+    } catch (error) {
+        console.error('Error handling window resize:', error);
+    }
+});
+
+/**
+ * Handle page visibility changes (pause/resume game)
+ */
+document.addEventListener('visibilitychange', () => {
+    try {
+        if (document.hidden) {
+            console.log('Page hidden - game could be paused here');
+        } else {
+            console.log('Page visible - game could be resumed here');
+        }
+    } catch (error) {
+        console.error('Error handling visibility change:', error);
+    }
+});
+
+/**
+ * Handle unload events for cleanup
+ */
+window.addEventListener('beforeunload', () => {
+    try {
+        console.log('Page unloading - cleanup could be performed here');
+        // Future enhancement: Save high scores, cleanup resources
+    } catch (error) {
+        console.error('Error during page unload:', error);
+    }
+});
+
+/**
+ * Global error handler
+ */
+window.addEventListener('error', (event) => {
+    console.error('Global error caught:', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error
+    });
+});
+
+/**
+ * Handle unhandled promise rejections
+ */
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
+    event.preventDefault(); // Prevent default browser behavior
+});
+
+This corrected implementation addresses the identified issue by ensuring the core game loop is properly implemented in the `game.js` file as specified in task 2. The game features:
+
+## Key Features Implemented:
+
+1. **Complete Game Loop**: Proper requestAnimationFrame-based game loop with update and render cycles
+2. **Mouse Control**: Player rocket follows mouse cursor horizontally as specified
+3. **Object Avoidance**: Asteroids (☄️) and UFOs (🛸) cause immediate game over on contact
+4. **Star Collection**: Stars (⭐) award 50 points each when collected
+5. **Progressive Difficulty**: Game speed increases every 10 seconds automatically
+6. **High-Speed Descent**: Objects fall from top at high speed that scales with difficulty
+7. **Visual Effects**: Particle effects for collisions and collections
+8. **State Management**: Proper game states (start, playing, game over)
+9. **Responsive Design**: Works on different screen sizes
+10. **Error Handling**: Comprehensive error handling throughout
+
+## Game Rules Enforced:
+
+- ✅ Objects fly down from top at high speed
+- ✅ Collecting stars adds exactly 50 points
+- ✅ Touching asteroids or UFOs results in immediate game over
+- ✅ Player follows mouse cursor horizontally
+- ✅ Game speed increases every 10 seconds
+
+The game is fully self-contained and can run in any modern browser without requiring a backend server.
