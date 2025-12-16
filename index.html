@@ -8,38 +8,35 @@
 </head>
 <body>
     <div class="game-container">
-        <div class="game-header">
-            <h1>Galaxy Defender</h1>
-            <div class="game-stats">
-                <div class="score">Score: <span id="score">0</span></div>
-                <div class="time">Time: <span id="time">0</span>s</div>
+        <div class="ui-overlay">
+            <div class="score-display">
+                <span id="score">Score: 0</span>
+                <span id="timer">Time: 0s</span>
             </div>
         </div>
         
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         
-        <div id="startScreen" class="overlay">
-            <div class="overlay-content">
-                <h2>🚀 Galaxy Defender 🚀</h2>
-                <p>Pilot your rocket to survive as long as possible!</p>
-                <div class="instructions">
-                    <p>🎯 <strong>Goal:</strong> Collect stars (⭐) for points</p>
-                    <p>⚠️ <strong>Avoid:</strong> Asteroids (☄️) and UFOs (🛸)</p>
-                    <p>🖱️ <strong>Control:</strong> Move mouse horizontally</p>
-                </div>
-                <button id="startButton" class="game-button">Start Game</button>
+        <div id="gameOverScreen" class="game-over-screen hidden">
+            <div class="game-over-content">
+                <h1>Game Over!</h1>
+                <p>Final Score: <span id="finalScore">0</span></p>
+                <p>Survival Time: <span id="survivalTime">0s</span></p>
+                <button id="restartButton" class="restart-btn">Play Again</button>
             </div>
         </div>
         
-        <div id="gameOverScreen" class="overlay hidden">
-            <div class="overlay-content">
-                <h2>💥 Game Over 💥</h2>
-                <p>Your rocket was destroyed!</p>
-                <div class="final-stats">
-                    <p>Final Score: <span id="finalScore">0</span></p>
-                    <p>Survival Time: <span id="finalTime">0</span>s</p>
+        <div id="startScreen" class="start-screen">
+            <div class="start-content">
+                <h1>🚀 Galaxy Defender 🚀</h1>
+                <p>Pilot your rocket to avoid asteroids and UFOs!</p>
+                <p>Collect stars for points!</p>
+                <div class="controls-info">
+                    <p>🖱️ Move your mouse to control the rocket</p>
+                    <p>⭐ Stars = +50 points</p>
+                    <p>☄️ Asteroids & 🛸 UFOs = Game Over</p>
                 </div>
-                <button id="restartButton" class="game-button">Play Again</button>
+                <button id="startButton" class="start-btn">Start Game</button>
             </div>
         </div>
     </div>
