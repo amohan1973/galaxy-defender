@@ -1,31 +1,28 @@
 /**
- * Galaxy Defender - Space Avoidance Game
- * A vertical scrolling space game where players dodge asteroids and collect stars
+ * Galaxy Defender - Space Object Avoidance Game
+ * A game where the player pilots a rocket to dodge asteroids and UFOs while collecting stars
  */
 
 class GalaxyDefender {
     constructor() {
+        // Canvas and context setup
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.scoreElement = document.getElementById('score');
-        this.timeElement = document.getElementById('time');
-        this.speedElement = document.getElementById('speed');
-        this.gameOverScreen = document.getElementById('gameOverScreen');
-        this.startScreen = document.getElementById('startScreen');
-        this.finalScoreElement = document.getElementById('finalScore');
-        this.finalTimeElement = document.getElementById('finalTime');
-        this.restartButton = document.getElementById('restartButton');
-        this.startButton = document.getElementById('startButton');
         
         // Game state
         this.gameState = 'start'; // 'start', 'playing', 'gameOver'
         this.score = 0;
-        this.gameTime = 0;
-        this.lastTime = 0;
-        this.gameSpeed = 1.0;
-        this.lastSpeedIncrease = 0;
+        this.startTime = 0;
+        this.elapsedTime = 0;
+        this.lastDifficultyIncrease = 0;
         
-        // Player properties
+        // Game settings
+        this.baseSpeed = 3;
+        this.currentSpeed = this.baseSpeed;
+        this.spawnRate = 0.02; // Probability of spawning an object per frame
+        this.difficultyIncreaseInterval = 10000; // 10 seconds in milliseconds
+        
+        // Player setup
         this.player = {
             x: this.canvas.width / 2,
             y: this.canvas.height - 80,
@@ -34,63 +31,58 @@ class GalaxyDefender {
             emoji: '🚀'
         };
         
-        // Game objects
+        // Game objects arrays
         this.objects = [];
-        this.objectSpawnTimer = 0;
-        this.objectSpawnInterval = 1000; // milliseconds
-        
-        // Mouse tracking
-        this.mouseX = this.canvas.width / 2;
         
         // Object types configuration
         this.objectTypes = {
             star: {
                 emoji: '⭐',
+                type: 'good',
                 points: 50,
-                harmful: false,
-                spawnChance: 0.4
+                spawnWeight: 0.4 // 40% chance
             },
             asteroid: {
                 emoji: '☄️',
+                type: 'bad',
                 points: 0,
-                harmful: true,
-                spawnChance: 0.35
+                spawnWeight: 0.35 // 35% chance
             },
             ufo: {
                 emoji: '🛸',
+                type: 'bad',
                 points: 0,
-                harmful: true,
-                spawnChance: 0.25
+                spawnWeight: 0.25 // 25% chance
             }
         };
+        
+        // Mouse tracking
+        this.mouseX = this.canvas.width / 2;
+        
+        // UI elements
+        this.scoreElement = document.getElementById('score');
+        this.timeElement = document.getElementById('time');
+        this.finalScoreElement = document.getElementById('finalScore');
+        this.finalTimeElement = document.getElementById('finalTime');
+        this.startScreen = document.getElementById('startScreen');
+        this.gameOverScreen = document.getElementById('gameOverScreen');
+        this.startButton = document.getElementById('startButton');
+        this.restartButton = document.getElementById('restartButton');
         
         this.init();
     }
     
     init() {
-        // Set up event listeners
+        // Event listeners
         this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        this.restartButton.addEventListener('click', () => this.restartGame());
         this.startButton.addEventListener('click', () => this.startGame());
+        this.restartButton.addEventListener('click', () => this.restartGame());
         
-        // Handle canvas resize for responsiveness
-        this.handleResize();
+        // Handle window resize
         window.addEventListener('resize', () => this.handleResize());
         
         // Start the game loop
         this.gameLoop();
-    }
-    
-    handleResize() {
-        const container = this.canvas.parentElement;
-        const maxWidth = Math.min(800, window.innerWidth - 40);
-        const maxHeight = Math.min(600, window.innerHeight - 200);
-        
-        if (maxWidth < 800) {
-            const scale = maxWidth / 800;
-            this.canvas.style.width = maxWidth + 'px';
-            this.canvas.style.height = (600 * scale) + 'px';
-        }
     }
     
     handleMouseMove(e) {
@@ -100,27 +92,39 @@ class GalaxyDefender {
         const scaleX = this.canvas.width / rect.width;
         this.mouseX = (e.clientX - rect.left) * scaleX;
         
-        // Keep player within canvas bounds
+        // Constrain mouse position to canvas boundaries
         this.mouseX = Math.max(this.player.width / 2, 
                               Math.min(this.canvas.width - this.player.width / 2, this.mouseX));
     }
     
-    startGame() {
-        this.gameState = 'playing';
-        this.startScreen.classList.add('hidden');
-        this.resetGame();
+    handleResize() {
+        // Maintain aspect ratio and responsive design
+        const container = this.canvas.parentElement;
+        const maxWidth = Math.min(window.innerWidth * 0.9, 800);
+        const maxHeight = Math.min(window.innerHeight * 0.6, 600);
+        
+        this.canvas.style.width = maxWidth + 'px';
+        this.canvas.style.height = maxHeight + 'px';
     }
     
-    resetGame() {
+    startGame() {
+        this.gameState = 'playing';
         this.score = 0;
-        this.gameTime = 0;
-        this.gameSpeed = 1.0;
-        this.lastSpeedIncrease = 0;
+        this.startTime = Date.now();
+        this.elapsedTime = 0;
+        this.lastDifficultyIncrease = 0;
+        this.currentSpeed = this.baseSpeed;
+        this.spawnRate = 0.02;
         this.objects = [];
-        this.objectSpawnTimer = 0;
-        this.player.x = this.canvas.width / 2;
-        this.mouseX = this.canvas.width / 2;
         
+        // Reset player position
+        this.player.x = this.canvas.width / 2;
+        this.player.y = this.canvas.height - 80;
+        
+        // Hide start screen
+        this.startScreen.classList.add('hidden');
+        
+        // Update UI
         this.updateUI();
     }
     
@@ -129,136 +133,123 @@ class GalaxyDefender {
         this.startGame();
     }
     
-    gameLoop(currentTime = 0) {
-        const deltaTime = currentTime - this.lastTime;
-        this.lastTime = currentTime;
+    gameOver() {
+        this.gameState = 'gameOver';
         
-        if (this.gameState === 'playing') {
-            this.update(deltaTime);
-        }
+        // Update final stats
+        this.finalScoreElement.textContent = this.score;
+        this.finalTimeElement.textContent = Math.floor(this.elapsedTime / 1000);
         
-        this.render();
-        requestAnimationFrame((time) => this.gameLoop(time));
+        // Show game over screen
+        this.gameOverScreen.classList.remove('hidden');
     }
     
-    update(deltaTime) {
-        // Update game time
-        this.gameTime += deltaTime;
+    updateDifficulty() {
+        const timeSinceLastIncrease = this.elapsedTime - this.lastDifficultyIncrease;
         
-        // Increase speed every 10 seconds
-        const currentSpeedLevel = Math.floor(this.gameTime / 10000);
-        if (currentSpeedLevel > this.lastSpeedIncrease) {
-            this.gameSpeed += 0.2;
-            this.lastSpeedIncrease = currentSpeedLevel;
+        if (timeSinceLastIncrease >= this.difficultyIncreaseInterval) {
+            this.currentSpeed += 0.5; // Increase falling speed
+            this.spawnRate = Math.min(this.spawnRate + 0.005, 0.05); // Increase spawn rate (cap at 0.05)
+            this.lastDifficultyIncrease = this.elapsedTime;
+            
+            console.log(`Difficulty increased! Speed: ${this.currentSpeed}, Spawn Rate: ${this.spawnRate}`);
         }
-        
-        // Update player position (follows mouse horizontally)
-        this.player.x = this.mouseX;
-        
-        // Spawn objects
-        this.objectSpawnTimer += deltaTime;
-        if (this.objectSpawnTimer >= this.objectSpawnInterval / this.gameSpeed) {
-            this.spawnObject();
-            this.objectSpawnTimer = 0;
-        }
-        
-        // Update objects
-        this.updateObjects(deltaTime);
-        
-        // Check collisions
-        this.checkCollisions();
-        
-        // Update UI
-        this.updateUI();
     }
     
     spawnObject() {
-        const types = Object.keys(this.objectTypes);
-        let selectedType = null;
-        const random = Math.random();
-        let cumulativeChance = 0;
+        if (Math.random() < this.spawnRate) {
+            const objectType = this.getRandomObjectType();
+            const object = {
+                x: Math.random() * (this.canvas.width - 40) + 20,
+                y: -40,
+                width: 35,
+                height: 35,
+                speed: this.currentSpeed + Math.random() * 2, // Add some variation
+                ...objectType
+            };
+            
+            this.objects.push(object);
+        }
+    }
+    
+    getRandomObjectType() {
+        const rand = Math.random();
+        let cumulativeWeight = 0;
         
-        // Select object type based on spawn chances
-        for (const type of types) {
-            cumulativeChance += this.objectTypes[type].spawnChance;
-            if (random <= cumulativeChance) {
-                selectedType = type;
-                break;
+        for (const [key, config] of Object.entries(this.objectTypes)) {
+            cumulativeWeight += config.spawnWeight;
+            if (rand <= cumulativeWeight) {
+                return { ...config, objectType: key };
             }
         }
         
-        if (!selectedType) selectedType = types[0];
-        
-        const object = {
-            x: Math.random() * (this.canvas.width - 40) + 20,
-            y: -40,
-            width: 35,
-            height: 35,
-            speed: (100 + Math.random() * 100) * this.gameSpeed,
-            type: selectedType,
-            ...this.objectTypes[selectedType]
-        };
-        
-        this.objects.push(object);
+        // Fallback to asteroid
+        return { ...this.objectTypes.asteroid, objectType: 'asteroid' };
     }
     
-    updateObjects(deltaTime) {
+    updateObjects() {
+        // Update object positions
         for (let i = this.objects.length - 1; i >= 0; i--) {
             const obj = this.objects[i];
-            obj.y += obj.speed * (deltaTime / 1000);
+            obj.y += obj.speed;
             
-            // Remove objects that have gone off screen
+            // Remove objects that are off-screen
             if (obj.y > this.canvas.height + 50) {
                 this.objects.splice(i, 1);
+                continue;
             }
-        }
-    }
-    
-    checkCollisions() {
-        for (let i = this.objects.length - 1; i >= 0; i--) {
-            const obj = this.objects[i];
             
-            // Simple rectangular collision detection
-            if (this.isColliding(this.player, obj)) {
-                if (obj.harmful) {
-                    // Game over on collision with harmful objects
-                    this.gameOver();
-                    return;
-                } else {
-                    // Collect beneficial objects (stars)
+            // Check collision with player
+            if (this.checkCollision(this.player, obj)) {
+                if (obj.type === 'good') {
+                    // Collect star
                     this.score += obj.points;
                     this.objects.splice(i, 1);
+                    this.createCollectionEffect(obj.x, obj.y);
+                } else {
+                    // Hit asteroid or UFO - game over
+                    this.gameOver();
+                    return;
                 }
             }
         }
     }
     
-    isColliding(rect1, rect2) {
+    checkCollision(rect1, rect2) {
         return rect1.x < rect2.x + rect2.width &&
                rect1.x + rect1.width > rect2.x &&
                rect1.y < rect2.y + rect2.height &&
                rect1.y + rect1.height > rect2.y;
     }
     
-    gameOver() {
-        this.gameState = 'gameOver';
-        this.finalScoreElement.textContent = this.score;
-        this.finalTimeElement.textContent = Math.floor(this.gameTime / 1000);
-        this.gameOverScreen.classList.remove('hidden');
+    createCollectionEffect(x, y) {
+        // Simple visual feedback for collecting stars
+        // This could be enhanced with particle effects
+        console.log(`Star collected at (${x}, ${y})! +50 points`);
+    }
+    
+    updatePlayer() {
+        // Smooth movement towards mouse position
+        const targetX = this.mouseX - this.player.width / 2;
+        const diff = targetX - this.player.x;
+        this.player.x += diff * 0.15; // Smooth interpolation
+        
+        // Ensure player stays within bounds
+        this.player.x = Math.max(0, Math.min(this.canvas.width - this.player.width, this.player.x));
     }
     
     updateUI() {
         this.scoreElement.textContent = this.score;
-        this.timeElement.textContent = Math.floor(this.gameTime / 1000);
-        this.speedElement.textContent = this.gameSpeed.toFixed(1);
+        this.timeElement.textContent = Math.floor(this.elapsedTime / 1000);
     }
     
     render() {
-        // Clear canvas
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Clear canvas with space background effect
+        this.ctx.fillStyle = 'rgba(0, 0, 17, 0.1)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw starfield background
-        this.drawStarfield();
+        // Draw stars background
+        this.drawStarField();
         
         if (this.gameState === 'playing') {
             // Draw player
@@ -268,23 +259,41 @@ class GalaxyDefender {
             this.objects.forEach(obj => {
                 this.drawEmoji(obj.emoji, obj.x, obj.y, obj.width);
             });
+            
+            // Draw player glow effect
+            this.drawPlayerGlow();
         }
     }
     
-    drawStarfield() {
-        // Create a simple animated starfield effect
-        this.ctx.fillStyle = 'white';
-        const time = Date.now() * 0.001;
-        
+    drawStarField() {
+        // Simple animated star field background
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         for (let i = 0; i < 50; i++) {
-            const x = (i * 37) % this.canvas.width;
-            const y = ((i * 73 + time * 20) % (this.canvas.height + 100)) - 50;
-            const size = (i % 3) + 1;
+            const x = (i * 137.5 + this.elapsedTime * 0.01) % this.canvas.width;
+            const y = (i * 73.3 + this.elapsedTime * 0.02) % this.canvas.height;
+            const size = Math.sin(this.elapsedTime * 0.001 + i) * 0.5 + 1;
             
-            this.ctx.globalAlpha = 0.3 + (i % 3) * 0.2;
-            this.ctx.fillRect(x, y, size, size);
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, size, 0, Math.PI * 2);
+            this.ctx.fill();
         }
-        this.ctx.globalAlpha = 1;
+    }
+    
+    drawPlayerGlow() {
+        // Add glow effect around player
+        this.ctx.save();
+        this.ctx.globalCompositeOperation = 'screen';
+        this.ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+        this.ctx.beginPath();
+        this.ctx.arc(
+            this.player.x + this.player.width / 2,
+            this.player.y + this.player.height / 2,
+            this.player.width,
+            0,
+            Math.PI * 2
+        );
+        this.ctx.fill();
+        this.ctx.restore();
     }
     
     drawEmoji(emoji, x, y, size) {
@@ -292,31 +301,65 @@ class GalaxyDefender {
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         
-        // Add a subtle glow effect
-        this.ctx.shadowColor = 'white';
-        this.ctx.shadowBlur = 5;
+        // Add shadow for better visibility
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        this.ctx.fillText(emoji, x + size/2 + 2, y + size/2 + 2);
         
-        this.ctx.fillText(emoji, x, y);
+        // Draw the emoji
+        this.ctx.fillStyle = 'white';
+        this.ctx.fillText(emoji, x + size/2, y + size/2);
+    }
+    
+    update() {
+        if (this.gameState === 'playing') {
+            // Update elapsed time
+            this.elapsedTime = Date.now() - this.startTime;
+            
+            // Update difficulty
+            this.updateDifficulty();
+            
+            // Update game objects
+            this.updatePlayer();
+            this.spawnObject();
+            this.updateObjects();
+            
+            // Update UI
+            this.updateUI();
+        }
+    }
+    
+    gameLoop() {
+        try {
+            this.update();
+            this.render();
+        } catch (error) {
+            console.error('Game loop error:', error);
+            // Attempt to recover by resetting to start state
+            this.gameState = 'start';
+            this.startScreen.classList.remove('hidden');
+            this.gameOverScreen.classList.add('hidden');
+        }
         
-        // Reset shadow
-        this.ctx.shadowBlur = 0;
+        requestAnimationFrame(() => this.gameLoop());
     }
 }
 
-// Error handling wrapper
-try {
-    // Initialize the game when the page loads
-    document.addEventListener('DOMContentLoaded', () => {
-        new GalaxyDefender();
-    });
-} catch (error) {
-    console.error('Game initialization failed:', error);
-    // Display error message to user
-    document.body.innerHTML = `
-        <div style="color: white; text-align: center; padding: 50px; font-family: Arial;">
-            <h2>Game Loading Error</h2>
-            <p>Sorry, the game failed to load. Please refresh the page and try again.</p>
-            <p>Error: ${error.message}</p>
-        </div>
-    `;
-}
+// Initialize the game when the page loads
+window.addEventListener('load', () => {
+    try {
+        const game = new GalaxyDefender();
+        console.log('Galaxy Defender initialized successfully!');
+    } catch (error) {
+        console.error('Failed to initialize Galaxy Defender:', error);
+        alert('Failed to load the game. Please refresh the page and try again.');
+    }
+});
+
+// Handle page visibility changes to pause/resume game
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        console.log('Game paused (tab hidden)');
+    } else {
+        console.log('Game resumed (tab visible)');
+    }
+});
