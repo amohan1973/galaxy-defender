@@ -17,44 +17,43 @@ body {
 
 .game-container {
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
+    width: 800px;
+    height: 600px;
+    border: 2px solid #4a90e2;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(74, 144, 226, 0.3);
 }
 
 #gameCanvas {
-    border: 2px solid #4a90e2;
-    border-radius: 10px;
+    display: block;
     background: radial-gradient(ellipse at center, #0f0f23 0%, #000000 100%);
-    box-shadow: 0 0 30px rgba(74, 144, 226, 0.3);
     cursor: none;
 }
 
 .ui-overlay {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    z-index: 10;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
+    z-index: 10;
 }
 
 .score-display {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 10px 20px;
-    border-radius: 25px;
-    border: 1px solid #4a90e2;
     font-size: 18px;
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(74, 144, 226, 0.8);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
-.game-over-screen {
+.screen {
     position: absolute;
     top: 0;
     left: 0;
@@ -62,172 +61,97 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.9);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 100;
-}
-
-.game-over-content {
     text-align: center;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    padding: 40px;
-    border-radius: 20px;
-    border: 2px solid #4a90e2;
-    box-shadow: 0 0 50px rgba(74, 144, 226, 0.5);
-    animation: slideIn 0.5s ease-out;
+    z-index: 20;
+    backdrop-filter: blur(5px);
 }
 
-.game-over-content h1 {
-    font-size: 48px;
+.screen.hidden {
+    display: none;
+}
+
+.screen h1 {
+    font-size: 3em;
     margin-bottom: 20px;
-    color: #ff6b6b;
-    text-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+    background: linear-gradient(45deg, #4a90e2, #50c878);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.game-over-content p {
-    font-size: 24px;
-    margin-bottom: 15px;
-    color: #4a90e2;
+.screen p {
+    font-size: 1.2em;
+    margin: 10px 0;
+    max-width: 600px;
+    line-height: 1.5;
 }
 
-.start-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-}
-
-.start-content {
-    text-align: center;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    padding: 50px;
-    border-radius: 20px;
-    border: 2px solid #4a90e2;
-    box-shadow: 0 0 50px rgba(74, 144, 226, 0.5);
-    animation: pulse 2s infinite;
-}
-
-.start-content h1 {
-    font-size: 56px;
-    margin-bottom: 30px;
-    color: #4a90e2;
-    text-shadow: 0 0 20px rgba(74, 144, 226, 0.8);
-}
-
-.start-content p {
-    font-size: 20px;
-    margin-bottom: 15px;
-    color: #ffffff;
-}
-
-.controls-info {
-    background: rgba(0, 0, 0, 0.5);
-    padding: 20px;
-    border-radius: 10px;
-    margin: 20px 0;
-    border: 1px solid #4a90e2;
-}
-
-.controls-info p {
-    font-size: 16px;
-    margin-bottom: 10px;
-}
-
-.restart-btn, .start-btn {
-    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
-    color: white;
+.screen button {
+    background: linear-gradient(45deg, #4a90e2, #50c878);
     border: none;
+    color: white;
     padding: 15px 30px;
-    font-size: 20px;
+    font-size: 1.2em;
     font-weight: bold;
     border-radius: 25px;
     cursor: pointer;
     margin-top: 20px;
     transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
 }
 
-.restart-btn:hover, .start-btn:hover {
-    background: linear-gradient(135deg, #357abd 0%, #2968a3 100%);
+.screen button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 7px 20px rgba(74, 144, 226, 0.6);
+    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.5);
 }
 
-.restart-btn:active, .start-btn:active {
+.screen button:active {
     transform: translateY(0);
-    box-shadow: 0 3px 10px rgba(74, 144, 226, 0.4);
-}
-
-.hidden {
-    display: none !important;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 50px rgba(74, 144, 226, 0.5);
-    }
-    50% {
-        box-shadow: 0 0 80px rgba(74, 144, 226, 0.8);
-    }
-    100% {
-        box-shadow: 0 0 50px rgba(74, 144, 226, 0.5);
-    }
 }
 
 /* Responsive design */
 @media (max-width: 900px) {
-    #gameCanvas {
+    .game-container {
         width: 90vw;
-        height: 67.5vw; /* Maintain 4:3 aspect ratio */
-        max-height: 80vh;
+        height: 67.5vw;
+        max-height: 90vh;
     }
     
-    .start-content, .game-over-content {
-        padding: 30px;
-        margin: 20px;
+    #gameCanvas {
+        width: 100%;
+        height: 100%;
     }
     
-    .start-content h1 {
-        font-size: 40px;
+    .screen h1 {
+        font-size: 2.5em;
     }
     
-    .game-over-content h1 {
-        font-size: 36px;
+    .screen p {
+        font-size: 1em;
+    }
+    
+    .score-display {
+        font-size: 16px;
     }
 }
 
 @media (max-width: 600px) {
+    .screen h1 {
+        font-size: 2em;
+    }
+    
+    .screen p {
+        font-size: 0.9em;
+    }
+    
     .score-display {
         font-size: 14px;
-        padding: 8px 15px;
-    }
-    
-    .start-content h1 {
-        font-size: 32px;
-    }
-    
-    .game-over-content h1 {
-        font-size: 28px;
-    }
-    
-    .start-content p, .game-over-content p {
-        font-size: 16px;
+        top: 10px;
+        left: 10px;
+        right: 10px;
     }
 }

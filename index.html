@@ -17,27 +17,20 @@
         
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         
-        <div id="gameOverScreen" class="game-over-screen hidden">
-            <div class="game-over-content">
-                <h1>Game Over!</h1>
-                <p>Final Score: <span id="finalScore">0</span></p>
-                <p>Survival Time: <span id="survivalTime">0s</span></p>
-                <button id="restartButton" class="restart-btn">Play Again</button>
-            </div>
+        <div id="startScreen" class="screen">
+            <h1>🚀 Galaxy Defender</h1>
+            <p>Pilot your rocket to dodge asteroids and UFOs!</p>
+            <p>Collect ⭐ stars for points (+50 each)</p>
+            <p>Avoid ☄️ asteroids and 🛸 UFOs</p>
+            <p>Move your mouse horizontally to control the rocket</p>
+            <button id="startButton">Start Game</button>
         </div>
         
-        <div id="startScreen" class="start-screen">
-            <div class="start-content">
-                <h1>🚀 Galaxy Defender 🚀</h1>
-                <p>Pilot your rocket to avoid asteroids and UFOs!</p>
-                <p>Collect stars for points!</p>
-                <div class="controls-info">
-                    <p>🖱️ Move your mouse to control the rocket</p>
-                    <p>⭐ Stars = +50 points</p>
-                    <p>☄️ Asteroids & 🛸 UFOs = Game Over</p>
-                </div>
-                <button id="startButton" class="start-btn">Start Game</button>
-            </div>
+        <div id="gameOverScreen" class="screen hidden">
+            <h1>Game Over!</h1>
+            <p id="finalScore">Final Score: 0</p>
+            <p id="survivalTime">Survival Time: 0s</p>
+            <button id="restartButton">Play Again</button>
         </div>
     </div>
     
