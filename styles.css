@@ -6,152 +6,205 @@
 
 body {
     font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+    background: linear-gradient(135deg, #0c0c2e 0%, #1a1a3e 50%, #2d1b69 100%);
     color: white;
-    overflow: hidden;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
 }
 
 .game-container {
-    position: relative;
-    width: 800px;
-    height: 600px;
-    border: 2px solid #4a90e2;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 0 30px rgba(74, 144, 226, 0.3);
-}
-
-#gameCanvas {
-    display: block;
-    background: radial-gradient(ellipse at center, #0f0f23 0%, #000000 100%);
-    cursor: none;
-}
-
-.ui-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 10;
-}
-
-.score-display {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 18px;
-    font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-.screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    width: 100%;
+    max-width: 900px;
+    padding: 20px;
+}
+
+.game-header {
     text-align: center;
-    z-index: 20;
-    backdrop-filter: blur(5px);
-}
-
-.screen.hidden {
-    display: none;
-}
-
-.screen h1 {
-    font-size: 3em;
     margin-bottom: 20px;
-    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
-    background: linear-gradient(45deg, #4a90e2, #50c878);
+    width: 100%;
+}
+
+.game-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    text-shadow: 0 0 20px #00ffff;
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-.screen p {
-    font-size: 1.2em;
-    margin: 10px 0;
-    max-width: 600px;
-    line-height: 1.5;
+.game-info {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 10px 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.screen button {
-    background: linear-gradient(45deg, #4a90e2, #50c878);
+.game-info > div {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.score-display span:last-child {
+    color: #00ff00;
+}
+
+.time-display span:last-child {
+    color: #ffff00;
+}
+
+.level-display span:last-child {
+    color: #ff6600;
+}
+
+.game-area {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+}
+
+#gameCanvas {
+    display: block;
+    background: linear-gradient(180deg, #000011 0%, #000033 50%, #000055 100%);
+    border: 2px solid #00ffff;
+    cursor: none;
+}
+
+.game-over-screen,
+.start-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.game-over-content,
+.start-content {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    border-radius: 20px;
+    border: 2px solid #00ffff;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+}
+
+.game-over-content h2,
+.start-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #ff6600;
+    text-shadow: 0 0 10px #ff6600;
+}
+
+.game-over-content p,
+.start-content p {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.restart-btn,
+.start-btn {
+    background: linear-gradient(45deg, #00ffff, #0099cc);
     border: none;
     color: white;
     padding: 15px 30px;
-    font-size: 1.2em;
+    font-size: 1.2rem;
     font-weight: bold;
-    border-radius: 25px;
+    border-radius: 10px;
     cursor: pointer;
     margin-top: 20px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
 }
 
-.screen button:hover {
+.restart-btn:hover,
+.start-btn:hover {
+    background: linear-gradient(45deg, #00ccff, #0066aa);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.5);
+    box-shadow: 0 6px 20px rgba(0, 255, 255, 0.5);
 }
 
-.screen button:active {
+.restart-btn:active,
+.start-btn:active {
     transform: translateY(0);
 }
 
-/* Responsive design */
+.hidden {
+    display: none !important;
+}
+
+.instructions {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 1rem;
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive Design */
 @media (max-width: 900px) {
-    .game-container {
-        width: 90vw;
-        height: 67.5vw;
-        max-height: 90vh;
-    }
-    
     #gameCanvas {
         width: 100%;
-        height: 100%;
+        height: auto;
+        max-width: 800px;
     }
     
-    .screen h1 {
-        font-size: 2.5em;
+    .game-header h1 {
+        font-size: 2rem;
     }
     
-    .screen p {
-        font-size: 1em;
-    }
-    
-    .score-display {
-        font-size: 16px;
+    .game-info {
+        flex-direction: column;
+        gap: 10px;
     }
 }
 
 @media (max-width: 600px) {
-    .screen h1 {
-        font-size: 2em;
+    .game-container {
+        padding: 10px;
     }
     
-    .screen p {
-        font-size: 0.9em;
+    .game-header h1 {
+        font-size: 1.5rem;
     }
     
-    .score-display {
-        font-size: 14px;
-        top: 10px;
-        left: 10px;
-        right: 10px;
+    .game-over-content,
+    .start-content {
+        padding: 20px;
     }
+    
+    .game-over-content h2,
+    .start-content h2 {
+        font-size: 1.8rem;
+    }
+}
+
+/* Animation for stars and effects */
+@keyframes twinkle {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.star-effect {
+    animation: twinkle 0.5s ease-in-out;
 }

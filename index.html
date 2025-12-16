@@ -8,29 +8,50 @@
 </head>
 <body>
     <div class="game-container">
-        <div class="ui-overlay">
-            <div class="score-display">
-                <span id="score">Score: 0</span>
-                <span id="timer">Time: 0s</span>
+        <div class="game-header">
+            <h1>Galaxy Defender</h1>
+            <div class="game-info">
+                <div class="score-display">
+                    <span>Score: </span>
+                    <span id="score">0</span>
+                </div>
+                <div class="time-display">
+                    <span>Time: </span>
+                    <span id="time">0</span>s
+                </div>
+                <div class="level-display">
+                    <span>Level: </span>
+                    <span id="level">1</span>
+                </div>
             </div>
         </div>
         
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        
-        <div id="startScreen" class="screen">
-            <h1>🚀 Galaxy Defender</h1>
-            <p>Pilot your rocket to dodge asteroids and UFOs!</p>
-            <p>Collect ⭐ stars for points (+50 each)</p>
-            <p>Avoid ☄️ asteroids and 🛸 UFOs</p>
-            <p>Move your mouse horizontally to control the rocket</p>
-            <button id="startButton">Start Game</button>
+        <div class="game-area">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            
+            <div id="gameOverScreen" class="game-over-screen hidden">
+                <div class="game-over-content">
+                    <h2>Game Over!</h2>
+                    <p>Final Score: <span id="finalScore">0</span></p>
+                    <p>Time Survived: <span id="finalTime">0</span>s</p>
+                    <button id="restartBtn" class="restart-btn">Play Again</button>
+                </div>
+            </div>
+            
+            <div id="startScreen" class="start-screen">
+                <div class="start-content">
+                    <h2>Galaxy Defender</h2>
+                    <p>🚀 Use your mouse to control the rocket</p>
+                    <p>⭐ Collect stars for points (+50)</p>
+                    <p>☄️ Avoid asteroids and UFOs 🛸</p>
+                    <p>Game speed increases every 10 seconds!</p>
+                    <button id="startBtn" class="start-btn">Start Game</button>
+                </div>
+            </div>
         </div>
         
-        <div id="gameOverScreen" class="screen hidden">
-            <h1>Game Over!</h1>
-            <p id="finalScore">Final Score: 0</p>
-            <p id="survivalTime">Survival Time: 0s</p>
-            <button id="restartButton">Play Again</button>
+        <div class="instructions">
+            <p>Move your mouse horizontally to control the rocket. Collect stars and avoid asteroids!</p>
         </div>
     </div>
     
